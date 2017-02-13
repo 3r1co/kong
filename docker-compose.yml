@@ -1,0 +1,27 @@
+version: '2'
+
+volumes:
+  cassandra:
+
+services:
+  db:
+    image: cassandra:2.2
+    volumes:
+      - cassandra:/var/lib/cassandra
+  kong:
+    image: kong
+    environment:
+      - "KONG_DATABASE=cassandra"
+      - "KONG_CASSANDRA_CONTACT_POINTS=db"
+      - "KONG_PG_HOST=db"
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "7946:7946"
+    depends_on:
+      - db
+  dashboard:
+    image: pgbi/kong-dashboard
+    ports:
+    - "8080:8080"
