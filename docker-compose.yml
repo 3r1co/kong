@@ -1,27 +1,38 @@
 version: '2'
 
 volumes:
-  cassandra:
+  postgres:
 
 services:
   db:
-    image: cassandra:2.2
+    image: postgres:9.4
+    environment:
+      - "POSTGRES_USER=kong"
+      - "POSTGRES_DB=kong"
     volumes:
-      - cassandra:/var/lib/cassandra
+      - postgres:/var/lib/postgresql/data
   kong:
     image: kong
     environment:
-      - "KONG_DATABASE=cassandra"
-      - "KONG_CASSANDRA_CONTACT_POINTS=db"
+      - "KONG_DATABASE=postgres"
       - "KONG_PG_HOST=db"
     ports:
-      - "8000:8000"
-      - "8443:8443"
-      - "8001:8001"
-      - "7946:7946"
+      - "80:8000"
+      - "443:8443"
+      - "127.0.0.1:8001:8001"
+    expose:
+       - 7946
+       - 7946/udp
+       - 8001
     depends_on:
       - db
+    networks:
+      - outside
+      - default
   dashboard:
     image: pgbi/kong-dashboard
-    ports:
-    - "8080:8080"
+
+networks:
+  outside:
+    external:
+      name: rp
