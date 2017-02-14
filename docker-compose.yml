@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 volumes:
   postgres:
@@ -11,19 +11,15 @@ services:
       - "POSTGRES_DB=kong"
     volumes:
       - postgres:/var/lib/postgresql/data
+    networks:
+      - default
   kong:
     image: kong
     environment:
       - "KONG_DATABASE=postgres"
       - "KONG_PG_HOST=db"
     ports:
-      - "80:8000"
-      - "443:8443"
       - "127.0.0.1:8001:8001"
-    expose:
-       - 7946
-       - 7946/udp
-       - 8001
     depends_on:
       - db
     networks:
@@ -31,8 +27,12 @@ services:
       - default
   dashboard:
     image: pgbi/kong-dashboard
+    networks:
+      - default
 
 networks:
+  default:
+    driver: overlay
   outside:
     external:
       name: rp
